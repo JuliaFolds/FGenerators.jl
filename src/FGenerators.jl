@@ -96,7 +96,7 @@ function define_foldl(yielded::Function, structname, allargs, body)
         unpack = [:($a = $xs.$a) for a in allargs]
     end
     return quote
-        function $Transducers.__foldl__($rf, $acc, $xs::$structname)
+        function $Transducers.__foldl__($rf::RF, $acc, $xs::$structname) where {RF}
             $(unpack...)
             $body
             $completion
