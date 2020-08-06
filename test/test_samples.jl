@@ -30,13 +30,23 @@ Base.eltype(::Type{<:Count}) = Int
     end
 end
 
-# function repeat3(x)
-#     @fgenerator function ()
-#         @yield x
-#         @yield x
-#         @yield x
-#     end
-# end
+repeat3 = @fgenerator function (x)
+    @yield x
+    @yield x
+    @yield x
+end
+
+repeat3_arrow = @fgenerator x -> begin
+    @yield x
+    @yield x
+    @yield x
+end
+
+repeat3_arrow2 = @fgenerator (x,) -> begin
+    @yield x
+    @yield x
+    @yield x
+end
 
 raw_testdata = """
 noone() == []
@@ -44,6 +54,9 @@ oneone() == [1]
 onetwothree() == [1, 2, 3]
 Count(0, 2) == [0, 1, 2]
 Count(0, -1) == Int[]
+repeat3(:a) == [:a, :a, :a]
+repeat3_arrow(:a) == [:a, :a, :a]
+repeat3_arrow2(:a) == [:a, :a, :a]
 """
 
 args_and_kwargs(args...; kwargs...) = args, (; kwargs...)
