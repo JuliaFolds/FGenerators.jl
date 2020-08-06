@@ -18,20 +18,24 @@ macro yield(x)
     :(__yield__($(esc(x))) && return)
 end
 
-macro fgenerator(ex)
-    if isexpr(ex, :function, 2) && isexpr(ex.args[1], :tuple, 1)
+function _hack_annon!(ex)
+    if isexpr(ex, :function, 2) && isexpr(ex.args[1], :tuple)
         ex.args[1] = Expr(:call, :_, ex.args[1].args...)
         # Update MacroTools.jl after anonymous function is supported:
         # https://github.com/MikeInnes/MacroTools.jl/pull/140
+    elseif isexpr(ex, :->, 2)
+        ex = Expr(:function, Expr(:call, :_, ex.args[1].args...), ex.args[2])
     end
+    return ex
+end
+
+macro fgenerator(ex)
+    # ex = _hack_annon!(ex)
     def = splitdef(ex)
 
-    if def[:name] === :_
-        @assert isempty(def[:kwargs])
-        @assert length(def[:args]) == 1
-        @assert @capture(def[:args][1], collection_::typename_)
-        return esc(define_foldl(__module__, typename, collection, def[:body]))
-    end
+    # if def[:name] === :_
+    #     def[:name] = gensym(:anonymous)
+    # end
 
     allargs = map([def[:args]; def[:kwargs]]) do x
         if @capture(x, args_...)
@@ -41,20 +45,31 @@ macro fgenerator(ex)
         end
     end
 
-    structname = gensym(string(def[:name], "#itr"))
-    structparams = [gensym("T_$a") for a in allargs]
-    structfields = [:($a::$T) for (a, T) in zip(allargs, structparams)]
+    tag = gensym(string(def[:name], "#itr"))
+    structname = FGenerator{tag}
 
     body = def[:body]
-    def[:body] = :($structname($(allargs...)))
+    def[:body] = :($structname(($(allargs...),)))
     quote
-        struct $structname{$(structparams...)} <: $Foldable
-            $(structfields...)
-        end
         $(combinedef(def))
         $(define_foldl(__module__, structname, allargs, body))
     end |> esc
 end
+
+macro fgenerator(fun, coll)
+    fun = _hack_annon!(fun)
+    def = splitdef(fun)
+    @assert isempty(def[:kwargs])
+    @assert length(def[:args]) == 0
+    @assert @capture(coll, collvar_::typename_)
+    return esc(define_foldl(__module__, typename, collvar, def[:body]))
+end
+
+struct FGenerator{Tag,Params} <: Foldable
+    params::Params
+end
+
+FGenerator{Tag}(params::Params) where {Tag,Params} = FGenerator{Tag,Params}(params)
 
 function is_function(ex)
     if isexpr(ex, :(=)) || isexpr(ex, :->)
@@ -93,8 +108,9 @@ function define_foldl(yielded::Function, structname, allargs, body)
         unpack = []
     else
         @gensym xs
-        unpack = [:($a = $xs.$a) for a in allargs]
+        unpack = [:($a = $xs.params[$i]) for (i, a) in enumerate(allargs)]
     end
+    # TODO: return AdHocFoldable when the input is anonymous function
     return quote
         function $Transducers.__foldl__($rf::RF, $acc, $xs::$structname) where {RF}
             $(unpack...)

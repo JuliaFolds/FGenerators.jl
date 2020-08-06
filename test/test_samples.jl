@@ -20,7 +20,7 @@ end
 Base.length(itr::Count) = max(0, itr.stop - itr.start + 1)
 Base.eltype(::Type{<:Count}) = Int
 
-@fgenerator function (itr::Count)
+@fgenerator(itr::Count) do
     i = itr.start
     i > itr.stop && return
     while true
@@ -29,6 +29,14 @@ Base.eltype(::Type{<:Count}) = Int
         i += 1
     end
 end
+
+# function repeat3(x)
+#     @fgenerator function ()
+#         @yield x
+#         @yield x
+#         @yield x
+#     end
+# end
 
 raw_testdata = """
 noone() == []
