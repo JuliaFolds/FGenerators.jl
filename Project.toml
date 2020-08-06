@@ -9,6 +9,7 @@ Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 
 [compat]
 julia = "1"
+Transducers = "0.4.47"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
