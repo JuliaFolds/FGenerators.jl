@@ -12,10 +12,31 @@ using Base.Meta: isexpr
 using MacroTools: @capture, combinedef, splitdef
 using Transducers: AdHocFoldable, Foldable, Transducers, foldl_nocomplete
 
-const RF = gensym(:__rf__)
-const ACC = gensym(:__acc__)
+# TODO: move macro-sharing mechanism out of this package
+#
+# To share the macros `@yield` and `@yieldfrom` between different
+# packages, make the definition of it to be modifiable within a
+# dynamical scope.
+const YIELD_DEF = Ref{Tuple{Any,Any}}((nothing, nothing))
+const YIELD_DEF_LOCK = ReentrantLock()
 
-__yield__(x = nothing) = error("@yield used outside @generator")
+function with_yield_defs(f; on_yield, on_yieldfrom)
+    lock(YIELD_DEF_LOCK) do
+        original = YIELD_DEF[]
+        try
+            YIELD_DEF[] = (on_yield, on_yieldfrom)
+            f()
+        finally
+            YIELD_DEF[] = original
+        end
+    end
+end
+
+function expand_with_yield_defs(__module__::Module, ex; kwargs...)
+    with_yield_defs(; kwargs...) do
+        macroexpand(__module__, ex)
+    end
+end
 
 """
     @yield item
@@ -23,15 +44,43 @@ __yield__(x = nothing) = error("@yield used outside @generator")
 Yield an item from a generator.  This is usable only inside special
 contexts such as within [`@fgenerator`](@ref) macro.
 """
-macro yield(x)
-    :(__yield__($(esc(x))) && return)
+macro yield(args...)
+    on_yield, = YIELD_DEF[]
+    if on_yield === nothing
+        error("`@yield` used outside `@fgenerator` etc.")
+    end
+    on_yield((__module__ = __module__, __source__ = __source__, args = args))
 end
 
 """
     @yieldfrom foldable
 """
-macro yieldfrom(foldable)
-    @gensym ans
+macro yieldfrom(args...)
+    _, on_yieldfrom = YIELD_DEF[]
+    if on_yieldfrom === nothing
+        error("`@yieldfrom` used outside `@fgenerator` etc.")
+    end
+    on_yieldfrom((__module__ = __module__, __source__ = __source__, args = args))
+end
+
+const RF = gensym(:__rf__)
+const ACC = gensym(:__acc__)
+
+function _on_yield(ctx)
+    if length(ctx.args) != 1
+        throw(ArgumentError("`@yield` requires exactly one argument. Got:\n$(ctx.args)"))
+    end
+    x, = ctx.args
+    quote
+        $ACC = $Transducers.@next($RF, $ACC, $x)
+    end |> esc
+end
+
+function _on_yieldfrom(ctx)
+    if length(ctx.args) != 1
+        throw(ArgumentError("`@yieldfrom` requires exactly one argument. Got:\n$(ctx.args)"))
+    end
+    foldable, = ctx.args
     quote
         $ACC = $Transducers.@return_if_reduced $foldl_nocomplete($RF, $ACC, $foldable)
     end |> esc
@@ -216,7 +265,7 @@ function is_function(ex)
     return false
 end
 
-function define_foldl(yielded::Function, funcname, structname, allargs, body)
+function define_foldl(__module__::Module, funcname, structname, allargs, body)
     completion = :(return $Transducers.complete($RF, $ACC))
     function rewrite(body)
         body isa Expr || return body
@@ -229,11 +278,6 @@ function define_foldl(yielded::Function, funcname, structname, allargs, body)
             end
             error("Returning non-nothing from a generator: $(body.args[1])")
         end
-        if (x = yielded(body)) !== nothing
-            # Found `@yield(x)`
-            x = something(x)
-            return :($ACC = $Transducers.@next($RF, $ACC, $x))
-        end
         return Expr(body.head, map(rewrite, body.args)...)
     end
     body = rewrite(body)
@@ -244,51 +288,19 @@ function define_foldl(yielded::Function, funcname, structname, allargs, body)
         @gensym xs
         unpack = [:($a = $xs.$a) for a in allargs]
     end
-    return quote
+    ex = quote
         function $funcname($RF::RFType, $ACC, $xs::$structname) where {RFType}
             $(unpack...)
             $body
             $completion
         end
     end
+    return expand_with_yield_defs(
+        __module__,
+        ex;
+        on_yield = _on_yield,
+        on_yieldfrom = _on_yieldfrom,
+    )
 end
-
-define_foldl(__module__::Module, funcname, structname, allargs, body) =
-    define_foldl(funcname, structname, allargs, body) do body
-        if isexpr(body, :macrocall) && _issameref(__module__, body.args[1], var"@yield")
-            if length(body.args) != 3
-                throw(ArgumentError("`@yield` requires exactly one argument. Got:\n$body"))
-            end
-            return Some(body.args[end])
-        elseif isexpr(body, :call) && _issameref(__module__, body.args[1], __yield__)
-            # Just in case `macroexpand`'ed expression is provided.
-            @assert length(body.args) == 2
-            return Some(body.args[end])
-        end
-        return nothing
-    end
-
-struct _Undef end
-
-@nospecialize
-_resolveref(m, x::Symbol) = getfield(m, x)
-_resolveref(m, x::Expr) =
-    if isexpr(x, :.) && length(x.args) == 2
-        y = _resolveref(m, x.args[1])
-        y isa _Undef && return y
-        _resolveref(y, x.args[2])
-    else
-        _Undef()
-    end
-_resolveref(m, x::QuoteNode) = _resolveref(m, x.value)
-_resolveref(_, x) = x
-function _issameref(m::Module, a, b)
-    x = _resolveref(m, a)
-    x isa _Undef && return false
-    y = _resolveref(m, b)
-    y isa _Undef && return false
-    return x === y
-end
-@specialize
 
 end
