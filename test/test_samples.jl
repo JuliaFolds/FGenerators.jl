@@ -2,7 +2,7 @@ module TestSamples
 
 using FGenerators
 using Test
-using Transducers: Foldable, Map
+using Transducers: Map
 
 @fgenerator noone() = nothing
 @fgenerator oneone() = @yield 1
