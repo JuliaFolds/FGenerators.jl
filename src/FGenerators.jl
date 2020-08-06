@@ -150,9 +150,40 @@ end
 macro fgenerator(fun, coll)
     fun = _hack_annon!(fun)
     def = splitdef(fun)
-    @assert isempty(def[:kwargs])
-    @assert length(def[:args]) == 0
-    @assert @capture(coll, collvar_::typename_)
+    if !@capture(coll, collvar_::typename_)
+        msg =
+            "`@fgenerator(...) do; ...; end` (or two-argument form of `@fgenerator`)" *
+            " requires `generator::GeneratorType` as in"
+        throw(ArgumentError("""
+        $msg
+
+            @fgenerator(generator::GeneratorType) do
+                ...
+            end
+
+        Instead of the argument of the form `generator::GeneratorType`, got:
+        $coll
+        """))
+    end
+
+    if length(def[:args]) != 0
+        throw(ArgumentError(
+            "`@fgenerator(...) do; ...; end` (or two-argument form of" *
+            " `@fgenerator`) cannot be used with arguments after `do`. Got:\n" *
+            join(def[:args], ", "),
+        ))
+    end
+    if !isempty(def[:kwargs])
+        # Since `do` block can't generate keyword arguments, assume
+        # that it is from two-argument form.
+        throw(ArgumentError(
+            "Two-argument form of `@fgenerator` requires the first argument to" *
+            " be a function with a single argument. Got a function with" *
+            " keyword argument(s):\n" *
+            string(:(; $(def[:kwargs]...))),
+        ))
+    end
+
     return esc(define_foldl(
         __module__,
         :($Transducers.__foldl__),
@@ -213,7 +244,9 @@ end
 define_foldl(__module__::Module, funcname, structname, allargs, body) =
     define_foldl(funcname, structname, allargs, body) do body
         if isexpr(body, :macrocall) && _issameref(__module__, body.args[1], var"@yield")
-            @assert length(body.args) == 3
+            if length(body.args) != 3
+                throw(ArgumentError("`@yield` requires exactly one argument. Got:\n$body"))
+            end
             return Some(body.args[end])
         elseif isexpr(body, :call) && _issameref(__module__, body.args[1], __yield__)
             # Just in case `macroexpand`'ed expression is provided.
