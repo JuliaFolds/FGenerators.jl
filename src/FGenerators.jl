@@ -10,7 +10,7 @@ export @fgenerator, @yield
 
 using Base.Meta: isexpr
 using MacroTools: @capture, combinedef, splitdef
-using Transducers: Transducers
+using Transducers: Foldable, Transducers
 
 __yield__(x = nothing) = error("@yield used outside @generator")
 
@@ -48,7 +48,7 @@ macro fgenerator(ex)
     body = def[:body]
     def[:body] = :($structname($(allargs...)))
     quote
-        struct $structname{$(structparams...)}
+        struct $structname{$(structparams...)} <: $Foldable
             $(structfields...)
         end
         $(combinedef(def))
