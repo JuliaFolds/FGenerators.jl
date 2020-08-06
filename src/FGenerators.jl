@@ -6,11 +6,14 @@ module FGenerators
     replace(read(path, String), r"^```julia"m => "```jldoctest README")
 end FGenerators
 
-export @fgenerator, @yield, Foldable
+export @fgenerator, @yield, @yieldfrom, Foldable
 
 using Base.Meta: isexpr
 using MacroTools: @capture, combinedef, splitdef
-using Transducers: AdHocFoldable, Foldable, Transducers
+using Transducers: AdHocFoldable, Foldable, Transducers, foldl_nocomplete
+
+const RF = gensym(:__rf__)
+const ACC = gensym(:__acc__)
 
 __yield__(x = nothing) = error("@yield used outside @generator")
 
@@ -22,6 +25,16 @@ contexts such as within [`@fgenerator`](@ref) macro.
 """
 macro yield(x)
     :(__yield__($(esc(x))) && return)
+end
+
+"""
+    @yieldfrom foldable
+"""
+macro yieldfrom(foldable)
+    @gensym ans
+    quote
+        $ACC = $Transducers.@return_if_reduced $foldl_nocomplete($RF, $ACC, $foldable)
+    end |> esc
 end
 
 function _hack_annon!(ex)
@@ -204,8 +217,7 @@ function is_function(ex)
 end
 
 function define_foldl(yielded::Function, funcname, structname, allargs, body)
-    @gensym rf acc
-    completion = :(return $Transducers.complete($rf, $acc))
+    completion = :(return $Transducers.complete($RF, $ACC))
     function rewrite(body)
         body isa Expr || return body
         is_function(body) && return body
@@ -220,7 +232,7 @@ function define_foldl(yielded::Function, funcname, structname, allargs, body)
         if (x = yielded(body)) !== nothing
             # Found `@yield(x)`
             x = something(x)
-            return :($acc = $Transducers.@next($rf, $acc, $x))
+            return :($ACC = $Transducers.@next($RF, $ACC, $x))
         end
         return Expr(body.head, map(rewrite, body.args)...)
     end
@@ -233,7 +245,7 @@ function define_foldl(yielded::Function, funcname, structname, allargs, body)
         unpack = [:($a = $xs.$a) for a in allargs]
     end
     return quote
-        function $funcname($rf::RF, $acc, $xs::$structname) where {RF}
+        function $funcname($RF::RFType, $ACC, $xs::$structname) where {RFType}
             $(unpack...)
             $body
             $completion

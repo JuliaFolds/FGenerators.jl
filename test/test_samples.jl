@@ -12,6 +12,11 @@ using Transducers: Map
     @yield 3
 end
 
+@fgenerator function flatten2(a, b)
+    @yieldfrom a
+    @yieldfrom b
+end
+
 struct Count <: Foldable
     start::Int
     stop::Int
@@ -52,6 +57,7 @@ raw_testdata = """
 noone() == []
 oneone() == [1]
 onetwothree() == [1, 2, 3]
+flatten2((1, 2), (3,)) == [1, 2, 3]
 Count(0, 2) == [0, 1, 2]
 Count(0, -1) == Int[]
 repeat3(:a) == [:a, :a, :a]
