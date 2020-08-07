@@ -303,4 +303,38 @@ function define_foldl(__module__::Module, funcname, structname, allargs, body)
     )
 end
 
+"""
+    FGenerators.@with(f(...)) do ... end
+
+Equivalent to `f(...) do ... end` but workarounds the boxing problem
+when `@yield` is used inside the body of the `do` block.
+
+!!! warning
+
+    This macro is valid to use only for "context manager" type of `do`
+    block use-case where the `do` block is executed *exactly once* and
+    the result of the body is returned from `f`.  For example,
+    `@with(open(filename)) do` is valid but `@with(map(xs)) do` is
+    not.  This is because `map` can call the `do` block arbitrary
+    number of times.
+"""
+macro with(doblock, call)
+    @gensym acc1 acc2 ans1 ans2
+    true_doblock = Expr(:block, __source__, doblock.args[end])
+    doblock.args[end] = quote
+        local $ACC = $acc1
+        local $ans1 = $true_doblock
+        ($ans1, $ACC)
+    end
+    calldo = Expr(:do, call, doblock)
+    quote
+        local $ans2, $acc2
+        ($ans2, $acc2) = let $acc1 = $ACC
+            $calldo
+        end
+        $ACC = $Transducers.@return_if_reduced $acc2
+        $ans2
+    end |> esc
+end
+
 end
