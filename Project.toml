@@ -1,7 +1,7 @@
 name = "FGenerators"
 uuid = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
 authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1-DEV"
 
 [deps]
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
