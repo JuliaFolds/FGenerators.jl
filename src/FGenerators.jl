@@ -291,7 +291,7 @@ function define_foldl(__module__::Module, funcname, structname, allargs, body)
         unpack = []
     else
         @gensym xs
-        unpack = [:($a = $xs.$a) for a in allargs]
+        unpack = [:(local $a = $xs.$a) for a in allargs]
     end
     ex = quote
         function $funcname($RF::RFType, $ACC, $xs::$structname) where {RFType}
