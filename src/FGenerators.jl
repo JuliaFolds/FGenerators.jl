@@ -9,6 +9,7 @@ end FGenerators
 export @fgenerator, @yield, @yieldfrom, Foldable
 
 using Base.Meta: isexpr
+using FLoopsBase: with_extra_state_variables
 using MacroTools: @capture, combinedef, splitdef
 using Transducers: AdHocFoldable, Foldable, Transducers, foldl_nocomplete
 
@@ -300,12 +301,14 @@ function define_foldl(__module__::Module, funcname, structname, allargs, body)
             $completion
         end
     end
-    return expand_with_yield_defs(
-        __module__,
-        ex;
-        on_yield = _on_yield,
-        on_yieldfrom = _on_yieldfrom,
-    )
+    with_extra_state_variables([ACC]) do
+        return expand_with_yield_defs(
+            __module__,
+            ex;
+            on_yield = _on_yield,
+            on_yieldfrom = _on_yieldfrom,
+        )
+    end
 end
 
 """

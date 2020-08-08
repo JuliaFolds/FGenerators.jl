@@ -1,4 +1,6 @@
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+ContextVariablesX = "6add18c4-b38d-439d-96f6-d6bc489c04c5"
 FGenerators = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
+FLoopsBase = "b9860ae5-e623-471e-878b-f6a53c775ea6"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
