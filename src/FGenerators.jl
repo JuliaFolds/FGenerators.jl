@@ -204,7 +204,12 @@ macro fgenerator(ex)
     body = def[:body]
     funcname = gensym(string(def[:name], "#foldl"))
     folddef = define_foldl(__module__, funcname, NamedTuple, allargs, body)
-    nt = :((; $((Expr(:kw, a, a) for a in allargs)...)))
+    if VERSION < v"1.4"
+        namedtuple(; kw...) = kw.data
+        nt = :($namedtuple(; $((Expr(:kw, a, a) for a in allargs)...)))
+    else
+        nt = :((; $((Expr(:kw, a, a) for a in allargs)...)))
+    end
     def[:body] = :($AdHocFoldable($folddef, $nt))
     esc(combinedef(def))
 end
