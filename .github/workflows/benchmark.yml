@@ -1,0 +1,27 @@
+name: Run benchmarks
+
+on:
+  pull_request:
+
+jobs:
+  Benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: 1.5
+      - name: Install dependencies
+        run: julia -e 'using Pkg; pkg"add PkgBenchmark BenchmarkCI@0.1"'
+      - name: Run benchmarks
+        run: julia -e 'using PkgBenchmark, BenchmarkCI; BenchmarkCI.judge()'
+      - name: Push results
+        run: julia -e '
+          using BenchmarkCI;
+          BenchmarkCI.pushresult(;
+              url = "git@github.com:JuliaFolds/FGenerators-data.git",
+          );
+          '
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SSH_KEY: ${{ secrets.DATA_SSH_KEY }}
