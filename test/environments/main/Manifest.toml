@@ -84,7 +84,7 @@ uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 version = "0.25.1"
 
 [[FGenerators]]
-deps = ["ContextVariablesX", "FLoopsBase", "MacroTools", "Transducers"]
+deps = ["FLoopsBase", "MacroTools", "Transducers"]
 path = "../../.."
 uuid = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
 version = "0.1.0"

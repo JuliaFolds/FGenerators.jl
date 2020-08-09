@@ -72,7 +72,7 @@ deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[FGenerators]]
-deps = ["ContextVariablesX", "FLoopsBase", "MacroTools", "Transducers"]
+deps = ["FLoopsBase", "MacroTools", "Transducers"]
 path = ".."
 uuid = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
 version = "0.1.0"
