@@ -12,6 +12,19 @@ using Transducers: Map
     @yield 3
 end
 
+@fgenerator function organpipe(n::Integer)
+    i = 0
+    while i != n
+        i += 1
+        @yield i
+    end
+    while true
+        i -= 1
+        i == 0 && return
+        @yield i
+    end
+end
+
 @fgenerator function flatten2(a, b)
     @yieldfrom a
     @yieldfrom b
@@ -57,6 +70,8 @@ raw_testdata = """
 noone() == []
 oneone() == [1]
 onetwothree() == [1, 2, 3]
+organpipe(2) == [1, 2, 1]
+organpipe(3) == [1, 2, 3, 2, 1]
 flatten2((1, 2), (3,)) == [1, 2, 3]
 Count(0, 2) == [0, 1, 2]
 Count(0, -1) == Int[]

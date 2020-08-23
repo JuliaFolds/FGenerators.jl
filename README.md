@@ -4,8 +4,8 @@
 [![GitHub Actions](https://github.com/JuliaFolds//FGenerators.jl/workflows/Run%20tests/badge.svg)](https://github.com/JuliaFolds//FGenerators.jl/actions?query=workflow%3ARun+tests)
 
 FGenerators.jl is a package for defining Transducers.jl-compatible
-extended `foldl` with a simple `@yield`-based syntax.  An example for
-creating an ad-hoc "generator":
+extended `foldl` with a simple `@yield`-based syntax.  Here are a few
+examples for creating ad-hoc "generators":
 
 ```julia
 julia> using FGenerators
@@ -24,6 +24,38 @@ julia> collect(generate123())
 
 julia> sum(generate123())
 6
+
+julia> @fgenerator function organpipe(n::Integer)
+           i = 0
+           while i != n
+               i += 1
+               @yield i
+           end
+           while true
+               i -= 1
+               i == 0 && return
+               @yield i
+           end
+       end;
+
+julia> collect(organpipe(3))
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 2
+ 1
+
+julia> @fgenerator function organpipe2(n)
+           @yieldfrom 1:n
+           @yieldfrom n-1:-1:1
+       end;
+
+julia> collect(organpipe2(2))
+3-element Array{Int64,1}:
+ 1
+ 2
+ 1
 ```
 
 FGenerators.jl is a spin-off of
