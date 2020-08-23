@@ -126,4 +126,5 @@ julia> @floop for x in OrganPipe(2)
            @reduce(s += x)
        end
        s
+4
 ```
