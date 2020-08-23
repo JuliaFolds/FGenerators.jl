@@ -45,6 +45,17 @@ julia> collect(organpipe(3))
  3
  2
  1
+
+julia> @fgenerator function organpipe2(n)
+           @yieldfrom 1:n
+           @yieldfrom n-1:-1:1
+       end;
+
+julia> collect(organpipe2(2))
+3-element Array{Int64,1}:
+ 1
+ 2
+ 1
 ```
 
 FGenerators.jl is a spin-off of
