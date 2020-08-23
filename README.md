@@ -98,6 +98,10 @@ julia> collect(OrganPipe(2))
  1
 ```
 
+Note that inheriting `Foldable` is necessary only if using `Base` API
+such as `collect`.  It is not necessary when using just Transducers.jl
+API (including `FLoops.@floop`).
+
 ## Defining parallelizable collection
 
 `@fgenerator` alone is not enough for using parallel loops on the
