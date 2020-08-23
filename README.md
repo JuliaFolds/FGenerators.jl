@@ -24,6 +24,27 @@ julia> collect(generate123())
 
 julia> sum(generate123())
 6
+
+julia> @fgenerator function organpipe(n::Integer)
+           i = 0
+           while i != n
+               i += 1
+               @yield i
+           end
+           while true
+               i -= 1
+               i == 0 && return
+               @yield i
+           end
+       end;
+
+julia> collect(organpipe(3))
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 2
+ 1
 ```
 
 FGenerators.jl is a spin-off of

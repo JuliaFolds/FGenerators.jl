@@ -196,6 +196,8 @@ macro fgenerator(ex)
     allargs = map([def[:args]; def[:kwargs]]) do x
         if @capture(x, args_...)
             args
+        elseif @capture(x, a_::T_)
+            a::Symbol
         else
             x::Symbol
         end
