@@ -4,8 +4,8 @@
 [![GitHub Actions](https://github.com/JuliaFolds//FGenerators.jl/workflows/Run%20tests/badge.svg)](https://github.com/JuliaFolds//FGenerators.jl/actions?query=workflow%3ARun+tests)
 
 FGenerators.jl is a package for defining Transducers.jl-compatible
-extended `foldl` with a simple `@yield`-based syntax.  An example for
-creating an ad-hoc "generator":
+extended `foldl` with a simple `@yield`-based syntax.  Here are a few
+examples for creating ad-hoc "generators":
 
 ```julia
 julia> using FGenerators
