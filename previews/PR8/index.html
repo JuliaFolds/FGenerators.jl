@@ -35,6 +35,17 @@ julia&gt; collect(organpipe(3))
  2
  3
  2
+ 1
+
+julia&gt; @fgenerator function organpipe2(n)
+           @yieldfrom 1:n
+           @yieldfrom n-1:-1:1
+       end;
+
+julia&gt; collect(organpipe2(2))
+3-element Array{Int64,1}:
+ 1
+ 2
  1</code></pre><p>FGenerators.jl is a spin-off of <a href="https://github.com/JuliaFolds/GeneratorsX.jl">GeneratorsX.jl</a>.</p><p>Use <a href="https://github.com/JuliaFolds/FLoops.jl">FLoops.jl</a> to iterate over the items yielded from the generator:</p><pre><code class="language-julia-repl">julia&gt; using FLoops
 
 julia&gt; @floop for x in generate123()
@@ -42,7 +53,7 @@ julia&gt; @floop for x in generate123()
        end
 x = 1
 x = 2
-x = 3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/a1315f1920736ffa881bdaaf93b963f482006308/src/FGenerators.jl#L4-L70">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="FGenerators.@fgenerator" href="#FGenerators.@fgenerator"><code>FGenerators.@fgenerator</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@fgenerator function f(...) ... end
+x = 3</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/98726f0ec98bfff14a6f2a6a37ab533f3995d63f/src/FGenerators.jl#L4-L81">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="FGenerators.@fgenerator" href="#FGenerators.@fgenerator"><code>FGenerators.@fgenerator</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@fgenerator function f(...) ... end
 @fgenerator f(...) = ...
 @fgenerator(generator::GeneratorType) do; ...; end</code></pre><p>Define a function <code>f</code> that returns a &quot;generator&quot; usable with Transducers.jl-compatible APIs (akd <em>foldable</em> interface).  In <code>@fgenerator(generator::GeneratorType) do ... end</code> form, define Transducers.jl interface for <code>GeneratorType</code>.</p><p>Use <a href="#FGenerators.@yield"><code>@yield</code></a> in the function body for producing an item.  Use <code>return</code> to finish producing items.</p><p>See also <a href="@ref"><code>FGenerators</code></a>.</p><p><strong>Extended help</strong></p><p><strong>Examples</strong></p><p>Defining a function that returns a generator:</p><pre><code class="language-julia-repl">julia&gt; using FGenerators
 
@@ -91,7 +102,7 @@ julia&gt; collect(Count(0, 2))
 3-element Array{Int64,1}:
  0
  1
- 2</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/a1315f1920736ffa881bdaaf93b963f482006308/src/FGenerators.jl#L123-L208">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="FGenerators.@yield" href="#FGenerators.@yield"><code>FGenerators.@yield</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@yield item</code></pre><p>Yield an item from a generator.  This is usable only inside special contexts such as within <a href="#FGenerators.@fgenerator"><code>@fgenerator</code></a> macro.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/a1315f1920736ffa881bdaaf93b963f482006308/src/FGenerators.jl#L41-L46">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="FGenerators.@yieldfrom" href="#FGenerators.@yieldfrom"><code>FGenerators.@yieldfrom</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@yieldfrom foldable</code></pre><p>Yield items from a <code>foldable</code>.  This is usable only inside special contexts such as within <a href="#FGenerators.@fgenerator"><code>@fgenerator</code></a> macro.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; using FGenerators
+ 2</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/98726f0ec98bfff14a6f2a6a37ab533f3995d63f/src/FGenerators.jl#L123-L208">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="FGenerators.@yield" href="#FGenerators.@yield"><code>FGenerators.@yield</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@yield item</code></pre><p>Yield an item from a generator.  This is usable only inside special contexts such as within <a href="#FGenerators.@fgenerator"><code>@fgenerator</code></a> macro.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/98726f0ec98bfff14a6f2a6a37ab533f3995d63f/src/FGenerators.jl#L41-L46">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="FGenerators.@yieldfrom" href="#FGenerators.@yieldfrom"><code>FGenerators.@yieldfrom</code></a> — <span class="docstring-category">Macro</span></header><section><div><pre><code class="language-julia">@yieldfrom foldable</code></pre><p>Yield items from a <code>foldable</code>.  This is usable only inside special contexts such as within <a href="#FGenerators.@fgenerator"><code>@fgenerator</code></a> macro.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; using FGenerators
 
 julia&gt; @fgenerator function flatten2(xs, ys)
            @yieldfrom xs
@@ -103,4 +114,4 @@ julia&gt; collect(flatten2(1:2, 11:12))
   1
   2
  11
- 12</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/a1315f1920736ffa881bdaaf93b963f482006308/src/FGenerators.jl#L55-L78">source</a></section></article></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 23 August 2020 02:17">Sunday 23 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 12</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFolds/FGenerators.jl/blob/98726f0ec98bfff14a6f2a6a37ab533f3995d63f/src/FGenerators.jl#L55-L78">source</a></section></article></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 23 August 2020 02:19">Sunday 23 August 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
