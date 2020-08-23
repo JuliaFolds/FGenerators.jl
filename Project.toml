@@ -15,7 +15,9 @@ julia = "1"
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
+SplittablesBase = "171d559e-b47b-412a-8079-5efa626c420e"
+SplittablesTesting = "3bda5eb5-c32a-4f64-8618-df3be8968470"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Documenter", "FLoops", "Test"]
+test = ["Documenter", "FLoops", "SplittablesBase", "SplittablesTesting", "Test"]
