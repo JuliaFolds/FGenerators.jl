@@ -1,6 +1,8 @@
 module TestSamples
 
 using FGenerators
+using SplittablesBase
+using SplittablesTesting
 using Test
 using Transducers: Map
 
@@ -11,6 +13,36 @@ using Transducers: Map
     @yield 2
     @yield 3
 end
+
+@fgenerator function organpipe(n::Integer)
+    i = 0
+    while i != n
+        i += 1
+        @yield i
+    end
+    while true
+        i -= 1
+        i == 0 && return
+        @yield i
+    end
+end
+
+struct OrganPipe <: Foldable
+    n::Int
+end
+
+@fgenerator(foldable::OrganPipe) do
+    n = foldable.n
+    @yieldfrom 1:n
+    @yieldfrom n-1:-1:1
+end
+
+function SplittablesBase.halve(foldable::OrganPipe)
+    n = foldable.n
+    return (1:n, n-1:-1:1)
+end
+
+Base.length(foldable::OrganPipe) = 2 * foldable.n - 1
 
 @fgenerator function flatten2(a, b)
     @yieldfrom a
@@ -57,6 +89,10 @@ raw_testdata = """
 noone() == []
 oneone() == [1]
 onetwothree() == [1, 2, 3]
+organpipe(2) == [1, 2, 1]
+organpipe(3) == [1, 2, 3, 2, 1]
+OrganPipe(2) == [1, 2, 1]
+OrganPipe(3) == [1, 2, 3, 2, 1]
 flatten2((1, 2), (3,)) == [1, 2, 3]
 Count(0, 2) == [0, 1, 2]
 Count(0, -1) == Int[]
@@ -87,5 +123,7 @@ end
     @test collect(f(args...; kwargs...)) ==′ desired
     @test collect(Map(identity), f(args...; kwargs...)) ==′ desired
 end
+
+SplittablesTesting.test_ordered(Any[OrganPipe(n) for n in 1:10])
 
 end  # module

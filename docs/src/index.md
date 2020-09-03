@@ -7,4 +7,5 @@
 FGenerators
 FGenerators.@fgenerator
 FGenerators.@yield
+FGenerators.@yieldfrom
 ```
