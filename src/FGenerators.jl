@@ -324,7 +324,7 @@ function define_foldl(__module__::Module, funcname, structname, allargs, body)
             $completion
         end
     end
-    with_extra_state_variables([ACC]) do
+    begin
         return expand_with_yield_defs(
             __module__,
             ex;
