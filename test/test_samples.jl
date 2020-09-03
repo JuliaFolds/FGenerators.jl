@@ -138,6 +138,12 @@ end
     @test collect(Map(identity), f(args...; kwargs...)) ==′ desired
 end
 
+@testset "inference" begin
+    @test @inferred(sum(ffilter(isodd, onetwothree()))) == 4
+    @test @inferred(sum(ffilter(isodd, organpipe(3)))) == 5
+    @test @inferred(sum(ffilter(isodd, OrganPipe(3)))) == 5
+end
+
 SplittablesTesting.test_ordered(Any[OrganPipe(n) for n in 1:10])
 
 end  # module
