@@ -128,3 +128,34 @@ julia> @floop for x in OrganPipe(2)
        s
 4
 ```
+
+## Using `@floop` in `@fgenerator`
+
+`@floop` can be used inside `@fgenerator`
+
+```julia
+julia> @fgenerator function ffilter(f, xs)
+           @floop for x in xs
+               if f(x)
+                   @yield x
+               end
+           end
+       end;
+
+julia> collect(ffilter(isodd, generate123()))
+2-element Array{Int64,1}:
+ 1
+ 3
+
+julia> collect(ffilter(isodd, organpipe(3)))
+3-element Array{Int64,1}:
+ 1
+ 3
+ 1
+
+julia> collect(ffilter(isodd, 1:5))  # fallback to `Base.iterate`
+3-element Array{Int64,1}:
+ 1
+ 3
+ 5
+```
