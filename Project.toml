@@ -4,10 +4,12 @@ authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
 version = "0.1.2-DEV"
 
 [deps]
+FLoopsBase = "b9860ae5-e623-471e-878b-f6a53c775ea6"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 
 [compat]
+FLoopsBase = "0.1"
 MacroTools = "0.5"
 Transducers = "0.4.47"
 julia = "1"

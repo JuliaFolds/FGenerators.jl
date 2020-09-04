@@ -1,6 +1,7 @@
 module TestSamples
 
 using FGenerators
+using FLoops
 using SplittablesBase
 using SplittablesTesting
 using Test
@@ -85,6 +86,14 @@ repeat3_arrow2 = @fgenerator (x,) -> begin
     @yield x
 end
 
+@fgenerator function ffilter(f, xs)
+    @floop for x in xs
+        if f(x)
+            @yield x
+        end
+    end
+end
+
 raw_testdata = """
 noone() == []
 oneone() == [1]
@@ -99,6 +108,11 @@ Count(0, -1) == Int[]
 repeat3(:a) == [:a, :a, :a]
 repeat3_arrow(:a) == [:a, :a, :a]
 repeat3_arrow2(:a) == [:a, :a, :a]
+ffilter(isodd, noone()) == []
+ffilter(isodd, oneone()) == [1]
+ffilter(isodd, onetwothree()) == [1, 3]
+ffilter(isodd, 1:5) == [1, 3, 5]
+ffilter(isodd, organpipe(3)) == [1, 3, 1]
 """
 
 args_and_kwargs(args...; kwargs...) = args, (; kwargs...)
@@ -122,6 +136,12 @@ end
     ==′ = comparison
     @test collect(f(args...; kwargs...)) ==′ desired
     @test collect(Map(identity), f(args...; kwargs...)) ==′ desired
+end
+
+@testset "inference" begin
+    @test @inferred(sum(ffilter(isodd, onetwothree()))) == 4
+    @test @inferred(sum(ffilter(isodd, organpipe(3)))) == 5
+    @test @inferred(sum(ffilter(isodd, OrganPipe(3)))) == 5
 end
 
 SplittablesTesting.test_ordered(Any[OrganPipe(n) for n in 1:10])

@@ -1,5 +1,7 @@
 [deps]
+ContextVariablesX = "6add18c4-b38d-439d-96f6-d6bc489c04c5"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FGenerators = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
+FLoopsBase = "b9860ae5-e623-471e-878b-f6a53c775ea6"
 SplittablesBase = "171d559e-b47b-412a-8079-5efa626c420e"
