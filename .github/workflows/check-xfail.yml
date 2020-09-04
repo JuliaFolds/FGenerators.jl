@@ -13,7 +13,7 @@ jobs:
     name: Test xfail Julia ${{ matrix.julia-version }}
     steps:
       - uses: actions/checkout@v2
-      - uses: tkf/merge-xfail-branch@master
+      - uses: tkf/merge-xfail-branch@v1
         id: merge-xfail-branch
 
       - name: Setup julia
