@@ -1,4 +1,5 @@
 [deps]
+AbstractYieldMacros = "71802903-5811-4e1f-b8e7-37bd234b68eb"
 ContextVariablesX = "6add18c4-b38d-439d-96f6-d6bc489c04c5"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 FGenerators = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
