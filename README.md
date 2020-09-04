@@ -8,6 +8,8 @@ extended `foldl` with a simple `@yield`-based syntax.  Here are a few
 examples for creating ad-hoc "generators":
 
 ```julia
+julia> OOPS
+
 julia> using FGenerators
 
 julia> @fgenerator function generate123()
