@@ -8,36 +8,12 @@ end FGenerators
 
 export @fgenerator, @yield, @yieldfrom, Foldable
 
+import ContextualMacros
+using AbstractYieldMacros: @yield, @yieldfrom
 using Base.Meta: isexpr
 using FLoopsBase: with_extra_state_variables
 using MacroTools: @capture, combinedef, splitdef
 using Transducers: AdHocFoldable, Foldable, Transducers, foldl_nocomplete
-
-# TODO: move macro-sharing mechanism out of this package
-#
-# To share the macros `@yield` and `@yieldfrom` between different
-# packages, make the definition of it to be modifiable within a
-# dynamical scope.
-const YIELD_DEF = Ref{Tuple{Any,Any}}((nothing, nothing))
-const YIELD_DEF_LOCK = ReentrantLock()
-
-function with_yield_defs(f; on_yield, on_yieldfrom)
-    lock(YIELD_DEF_LOCK) do
-        original = YIELD_DEF[]
-        try
-            YIELD_DEF[] = (on_yield, on_yieldfrom)
-            f()
-        finally
-            YIELD_DEF[] = original
-        end
-    end
-end
-
-function expand_with_yield_defs(__module__::Module, ex; kwargs...)
-    with_yield_defs(; kwargs...) do
-        macroexpand(__module__, ex)
-    end
-end
 
 """
     @yield item
@@ -45,13 +21,7 @@ end
 Yield an item from a generator.  This is usable only inside special
 contexts such as within [`@fgenerator`](@ref) macro.
 """
-macro yield(args...)
-    on_yield, = YIELD_DEF[]
-    if on_yield === nothing
-        error("`@yield` used outside `@fgenerator` etc.")
-    end
-    on_yield((__module__ = __module__, __source__ = __source__, args = args))
-end
+:(@yield)
 
 """
     @yieldfrom foldable
@@ -77,13 +47,7 @@ julia> collect(flatten2(1:2, 11:12))
  12
 ```
 """
-macro yieldfrom(args...)
-    _, on_yieldfrom = YIELD_DEF[]
-    if on_yieldfrom === nothing
-        error("`@yieldfrom` used outside `@fgenerator` etc.")
-    end
-    on_yieldfrom((__module__ = __module__, __source__ = __source__, args = args))
-end
+:(@yieldfrom)
 
 const RF = gensym(:__rf__)
 const ACC = gensym(:__acc__)
@@ -325,11 +289,11 @@ function define_foldl(__module__::Module, funcname, structname, allargs, body)
         end
     end
     with_extra_state_variables([ACC]) do
-        return expand_with_yield_defs(
+        return ContextualMacros.expandwith(
             __module__,
             ex;
-            on_yield = _on_yield,
-            on_yieldfrom = _on_yieldfrom,
+            yield = _on_yield,
+            yieldfrom = _on_yieldfrom,
         )
     end
 end

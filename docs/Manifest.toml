@@ -1,5 +1,11 @@
 # This file is machine-generated - editing it directly is not advised
 
+[[AbstractYieldMacros]]
+deps = ["ContextualMacros"]
+git-tree-sha1 = "070897c0544f5cc60615395f6d2cd2d69ceea42a"
+uuid = "71802903-5811-4e1f-b8e7-37bd234b68eb"
+version = "0.1.0"
+
 [[ArgCheck]]
 git-tree-sha1 = "dedbbb2ddb876f899585c4ec4433265e3017215a"
 uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -36,6 +42,11 @@ git-tree-sha1 = "f4b33f7da62cc7fb2421771baa466105b6cb002f"
 repo-rev = "master"
 repo-url = "https://github.com/tkf/ContextVariablesX.jl.git"
 uuid = "6add18c4-b38d-439d-96f6-d6bc489c04c5"
+version = "0.1.0"
+
+[[ContextualMacros]]
+git-tree-sha1 = "1cf761fab00463b7967664a1e920645e9e6c6393"
+uuid = "18b01625-79e3-4c41-8668-c88bdfdd3c6f"
 version = "0.1.0"
 
 [[DataAPI]]
@@ -84,7 +95,7 @@ uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 version = "0.25.1"
 
 [[FGenerators]]
-deps = ["FLoopsBase", "MacroTools", "Transducers"]
+deps = ["AbstractYieldMacros", "ContextualMacros", "FLoopsBase", "MacroTools", "Transducers"]
 path = ".."
 uuid = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
 version = "0.1.0"
