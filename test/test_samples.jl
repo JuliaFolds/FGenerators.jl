@@ -94,7 +94,29 @@ end
     end
 end
 
-raw_testdata = """
+asval(x::Val) = x
+asval(x) = Val(x)
+const FlagType = Union{Val{true},Val{false},Bool}
+
+@fgenerator function linesin(str::AbstractString; keep::FlagType = Val(false))
+    keep = asval(keep)
+    start = firstindex(str)
+    for (i, c) in pairs(str)
+        if c == '\n'
+            if keep === Val(true)
+                @yield SubString(str, start, i)
+            else
+                @yield SubString(str, start, prevind(str, i))
+            end
+            start = nextind(str, i)
+        end
+    end
+    if start <= ncodeunits(str)
+        @yield SubString(str, start)
+    end
+end
+
+raw_testdata = raw"""
 noone() == []
 oneone() == [1]
 onetwothree() == [1, 2, 3]
@@ -113,6 +135,10 @@ ffilter(isodd, oneone()) == [1]
 ffilter(isodd, onetwothree()) == [1, 3]
 ffilter(isodd, 1:5) == [1, 3, 5]
 ffilter(isodd, organpipe(3)) == [1, 3, 1]
+linesin("a\nbb\nccc") == ["a", "bb", "ccc"]
+linesin("a\nbb\nccc"; keep=true) == ["a\n", "bb\n", "ccc"]
+linesin("a\nbb\nccc\n") == ["a", "bb", "ccc"]
+linesin("a\nbb\nccc\n"; keep=true) == ["a\n", "bb\n", "ccc\n"]
 """
 
 args_and_kwargs(args...; kwargs...) = args, (; kwargs...)
