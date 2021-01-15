@@ -180,6 +180,9 @@ macro fgenerator(ex)
     end
 
     allargs = map([def[:args]; def[:kwargs]]) do x
+        if isexpr(x, :kw)
+            x = x.args[1]
+        end
         if @capture(x, args_...)
             args
         elseif @capture(x, a_::T_)
