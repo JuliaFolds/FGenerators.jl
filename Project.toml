@@ -1,7 +1,7 @@
 name = "FGenerators"
 uuid = "4fd0377b-cfdc-4941-97f4-8d7ddbb8981e"
 authors = ["Takafumi Arakaki <aka.tkf@gmail.com> and contributors"]
-version = "0.1.4-DEV"
+version = "0.1.4"
 
 [deps]
 AbstractYieldMacros = "71802903-5811-4e1f-b8e7-37bd234b68eb"
